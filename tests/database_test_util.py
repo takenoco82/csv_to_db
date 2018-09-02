@@ -10,7 +10,7 @@ def setup_load_csv(table, filepath, truncate=True):
         def wrapper(*args, **kwargs):
             conn = database_connection.get_connection()
             load_csv(conn, table, filepath, truncate=truncate)
-            # 処理
+            conn.close()
             return func(*args, **kwargs)
         return wrapper
     return _setup_load_csv
