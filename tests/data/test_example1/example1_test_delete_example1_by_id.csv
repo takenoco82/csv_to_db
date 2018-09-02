@@ -1,0 +1,4 @@
+id,varchar_col,int_col,double_col,datetime_col
+1,abcdefghij,1234567890,123.456,2018-08-01 12:34:56
+2,,,,
+3,abcdefghij,1234567890,123.456,2018-08-01 12:34:56
