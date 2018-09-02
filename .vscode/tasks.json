@@ -1,0 +1,90 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "python",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "python",
+            "args": [
+                "${file}"
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceFolder}"
+                }
+            }
+        },
+        {
+            "label": "nosetests Current file",
+            "type": "shell",
+            "command": "nosetests -v ${relativeFile}",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": true
+            },
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": "^\\s+File \"(.*?)\", line ([0-9]+)[,]?.+?$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3,
+                    }
+                ]
+            },
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceFolder}"
+                }
+            }
+        },
+        {
+            "label": "nosetests All files",
+            "type": "shell",
+            "command": "nosetests -v ${workspaceRoot}/python",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": true
+            },
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": "^\\s+File \"(.*?)\", line ([0-9]+)[,]?.+?$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3,
+                    }
+                ]
+            },
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceFolder}"
+                }
+            }
+        }
+    ]
+}
