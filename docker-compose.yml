@@ -13,6 +13,19 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
     container_name: mysql
+    hostname: mysql
     volumes:
       - ./setup/mysql/conf.d:/etc/mysql/conf.d
       - ./setup/mysql/init:/docker-entrypoint-initdb.d
+
+  python:
+    build: .
+    container_name: python
+    links:
+      - mysql
+    tty: true
+    environment:
+      MYSQL_HOST: mysql
+    volumes:
+      # 面倒なのでプロジェクトごと共有する
+      - ../using-pandas:/using-pandas
