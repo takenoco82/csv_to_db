@@ -26,6 +26,7 @@ class Test_select_example1_by_id(unittest.TestCase):
             cls.conn,
             'example1',
             'tests/data/test_example1/example1_test_select_example1_by_id.csv')
+        cls.conn.commit()
 
     @classmethod
     def tearDownClass(cls):
@@ -80,6 +81,7 @@ class Test_select_example1(unittest.TestCase):
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_select_example1.csv')
+        self.conn.commit()
 
     def tearDown(self):
         pass
@@ -158,13 +160,10 @@ class Test_select_example1(unittest.TestCase):
         # 件数の確認
         self.assertEqual(len(records), 0)
 
+    @database_test_util.setup_load_csv(
+        'example1',
+        'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
     def test_select_example1_sort_by_id(self):
-        # データ初期化
-        database_test_util.load_csv(
-            self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
-
         records = example1.select_example1(self.conn, sort=example1.Sort.id)
         # 件数の確認
         self.assertEqual(len(records), 3)
@@ -173,13 +172,10 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
+    @database_test_util.setup_load_csv(
+        'example1',
+        'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
     def test_select_example1_sort_by_datetime_col(self):
-        # データ初期化
-        database_test_util.load_csv(
-            self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
-
         records = example1.select_example1(self.conn, sort=example1.Sort.datetime_col)
         # 件数の確認
         self.assertEqual(len(records), 4)
@@ -189,13 +185,10 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[2]['id'], 12)
         self.assertEqual(records[3]['id'], 14)
 
+    @database_test_util.setup_load_csv(
+        'example1',
+        'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
     def test_select_example1_order_by_asc(self):
-        # データ初期化
-        database_test_util.load_csv(
-            self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
-
         records = example1.select_example1(self.conn, order=example1.Order.asc)
         # 件数の確認
         self.assertEqual(len(records), 3)
@@ -204,13 +197,10 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
+    @database_test_util.setup_load_csv(
+        'example1',
+        'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
     def test_select_example1_order_by_desc(self):
-        # データ初期化
-        database_test_util.load_csv(
-            self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
-
         records = example1.select_example1(self.conn,
                                            sort=example1.Sort.datetime_col,
                                            order=example1.Order.desc)
@@ -242,6 +232,7 @@ class Test_insert_example1(unittest.TestCase):
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_insert_example1.csv')
+        self.conn.commit()
 
     def tearDown(self):
         pass
@@ -287,6 +278,7 @@ class Test_delete_example1_by_id(unittest.TestCase):
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_delete_example1_by_id.csv')
+        self.conn.commit()
 
     def tearDown(self):
         pass
@@ -313,3 +305,11 @@ class Test_delete_example1_by_id(unittest.TestCase):
         self.assertEqual(result, 0)
         # 件数の確認（そのままなので 3）
         self.assertEqual(count_example1(self.conn), 3)
+
+
+def main():
+    unittest.main()
+
+
+if __name__ == '__main__':
+    main()

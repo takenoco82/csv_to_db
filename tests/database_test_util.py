@@ -4,12 +4,17 @@ import pandas
 
 
 def setup_load_csv(table, filepath, truncate=True):
+    """
+    load_csv()を実行するデコレータです.
+    ※load_csv()とは違いコミットします
+    """
     def _setup_load_csv(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
         @wraps(func)
         def wrapper(*args, **kwargs):
             conn = database_connection.get_connection()
             load_csv(conn, table, filepath, truncate=truncate)
+            conn.commit()
             conn.close()
             return func(*args, **kwargs)
         return wrapper
@@ -19,6 +24,7 @@ def setup_load_csv(table, filepath, truncate=True):
 def load_csv(conn, table, filepath, truncate=True):
     '''
     指定されたcsvファイルの内容をテーブルに登録します.
+    ※コミットはしません
 
     csvファイルについて
         文字コードはUTF-8で作成してください
@@ -64,8 +70,6 @@ def load_csv(conn, table, filepath, truncate=True):
 
     finally:
         _set_foreign_key_checks_enabled(conn)
-
-    conn.commit()
 
 
 def _set_foreign_key_checks_disabled(conn):

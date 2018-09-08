@@ -65,6 +65,7 @@ class Test_database_test_util(unittest.TestCase):
         database_test_util.load_csv(self.conn,
                                     'example1',
                                     'tests/data/example1_test_load_csv.csv')
+        self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
@@ -131,6 +132,7 @@ class Test_database_test_util(unittest.TestCase):
         database_test_util.load_csv(self.conn,
                                     'example2',
                                     'tests/data/example2_test_load_csv.csv')
+        self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
@@ -170,6 +172,7 @@ class Test_database_test_util(unittest.TestCase):
                                     'example1',
                                     'tests/data/example1_test_load_csv.csv',
                                     truncate=False)
+        self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
