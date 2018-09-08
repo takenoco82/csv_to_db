@@ -41,11 +41,14 @@ class Test_select_example1_by_id(unittest.TestCase):
     def test_select_example1_by_id_success(self):
         record = example1.select_example1_by_id(self.conn, 1)
         # データの確認：1件目
-        self.assertEqual(record['id'], 1)
-        self.assertEqual(record['varchar_col'], 'abcdefghij')
-        self.assertEqual(record['int_col'], 1234567890)
-        self.assertEqual(record['double_col'], 123.456)
-        self.assertEqual(record['datetime_col'], datetime(2018, 8, 1, 12, 34, 56))
+        expected = {
+            'id': 1,
+            'varchar_col': 'abcdefghij',
+            'int_col': 1234567890,
+            'double_col': 123.456,
+            'datetime_col': datetime(2018, 8, 1, 12, 34, 56)
+        }
+        self.assertDictEqual(record, expected)
 
     def test_select_example1_by_id_success_none_value(self):
         record = example1.select_example1_by_id(self.conn, 2)
