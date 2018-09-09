@@ -91,17 +91,12 @@ class Test_select_example1(unittest.TestCase):
 
     def test_select_example1_all(self):
         records = example1.select_example1(self.conn)
+        expected_ids = [11, 12, 13, 14, 15, 16, 17, 18]
         # 件数の確認
-        self.assertEqual(len(records), 8)
+        self.assertEqual(len(records), len(expected_ids))
         # データの確認
-        self.assertEqual(records[0]['id'], 11)
-        self.assertEqual(records[1]['id'], 12)
-        self.assertEqual(records[2]['id'], 13)
-        self.assertEqual(records[3]['id'], 14)
-        self.assertEqual(records[4]['id'], 15)
-        self.assertEqual(records[5]['id'], 16)
-        self.assertEqual(records[6]['id'], 17)
-        self.assertEqual(records[7]['id'], 18)
+        for i, expected_id in enumerate(expected_ids):
+            self.assertEqual(records[i]['id'], expected_id, 'failed with i={}'.format(i))
 
     def test_select_example1_start(self):
         records = example1.select_example1(
