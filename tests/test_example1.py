@@ -1,4 +1,5 @@
 import unittest
+from parameterized import parameterized
 from datetime import datetime
 from app import database_connection
 from app import example1
@@ -97,6 +98,46 @@ class Test_select_example1(unittest.TestCase):
         # データの確認
         for i, expected_id in enumerate(expected_ids):
             self.assertEqual(records[i]['id'], expected_id, 'failed with i={}'.format(i))
+
+    @parameterized.expand([
+        # condition:start, condition:end, expected:id list
+        (
+            # startのみ指定
+            datetime(2018, 1, 1, 0, 0, 0),
+            None,
+            [12, 13, 14, 15, 16, 17]),
+        (
+            # endのみ指定
+            None,
+            datetime(2018, 1, 2, 0, 0, 0),
+            [11, 12, 13, 14, 15, 16]),
+        (
+            # start, end両方指定
+            datetime(2018, 1, 1, 0, 0, 0),
+            datetime(2018, 1, 2, 0, 0, 0),
+            [12, 13, 14, 15, 16]),
+        (
+            # start, endが同じ
+            datetime(2018, 1, 1, 0, 0, 0),
+            datetime(2018, 1, 1, 0, 0, 0),
+            [12]),
+        (
+            # end < データの日付 -> 取得データなし
+            datetime(2017, 12, 31, 0, 0, 0),
+            datetime(2017, 12, 31, 23, 59, 58),
+            []),
+    ])
+    def test_select_example1_parameterized_start_end(self, cond_start, cond_end, expected_ids):
+        records = example1.select_example1(self.conn, start=cond_start, end=cond_end)
+        # 件数の確認
+        self.assertEqual(
+            len(records), len(expected_ids),
+            'failed with cond_start={},cond_end={}'.format(cond_start, cond_end))
+        # データの確認
+        for i, expected_id in enumerate(expected_ids):
+            self.assertEqual(
+                records[i]['id'], expected_id,
+                'failed with cond_start={},cond_end={},i={}'.format(cond_start, cond_end, i))
 
     def test_select_example1_start(self):
         records = example1.select_example1(
