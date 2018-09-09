@@ -237,7 +237,7 @@ class Test_database_test_util(unittest.TestCase):
                                         'example1',
                                         'tests/data/example1_test_load_csv_error.csv')
 
-    @setup_load_csv('example1', 'tests/data/example1_test_load_csv.csv')
+    @setup_load_csv({'example1': 'tests/data/example1_test_load_csv.csv'})
     def test_setup_load_csv_success(self):
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
@@ -256,8 +256,9 @@ class Test_database_test_util(unittest.TestCase):
         record = records[3]
         self.assertEqual(record['id'], 14)
 
-    @setup_load_csv('example1', 'tests/data/example1_test_load_csv.csv')
-    @setup_load_csv('example2', 'tests/data/example2_test_load_csv.csv')
+    @setup_load_csv({
+        'example1': 'tests/data/example1_test_load_csv.csv',
+        'example2': 'tests/data/example2_test_load_csv.csv'})
     def test_setup_load_csv_success_multi(self):
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"

@@ -3,24 +3,33 @@ from functools import wraps
 import pandas
 
 
-def setup_load_csv(table, filepath, truncate=True):
-    """
-    load_csv()を実行するデコレータです.
+def setup_load_csv(file_dict: dict, truncate: bool=True):
+    """load_csv()を実行するデコレータです.
     ※load_csv()とは違いコミットします
 
     使用時の注意事項
         テストメソッドのトランザクションとデコレータのトランザクションが異なるため、
         デコレータ実行時にテストメソッドのトランザクションが開始されていると、
-        metadata lockが発生し、DB更新処理で止まってしまい、終了しなくなる可能性があります。
+        metadata lockが発生し、DB更新処理で止まってしまい、
+        終了しなくなる可能性があります。
 
-        metadata lockの最も簡単な回避策は、setUp()でcommit()またはrollback()を行うことです。
+        metadata lockの最も簡単な回避策は、
+        setUp()でcommit()またはrollback()を行うことです。
+
+    Args:
+        file_dict (dict):
+            key=テーブル名, value=ファイルパス
+        truncate (bool, optional):
+            Defaults to True.
+            登録前にTRUNCATEを行うかどうか。Trueの場合、TRUNCATEを行う。
     """
     def _setup_load_csv(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
         @wraps(func)
         def wrapper(*args, **kwargs):
             conn = database_connection.get_connection()
-            load_csv(conn, table, filepath, truncate=truncate)
+            for table, filepath in file_dict.items():
+                load_csv(conn, table, filepath, truncate=truncate)
             conn.commit()
             conn.close()
             return func(*args, **kwargs)

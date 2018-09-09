@@ -199,9 +199,8 @@ class Test_select_example1(unittest.TestCase):
         # 件数の確認
         self.assertEqual(len(records), 0)
 
-    @database_test_util.setup_load_csv(
-        'example1',
-        'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
+    @database_test_util.setup_load_csv({
+        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
     def test_select_example1_sort_by_id(self):
         records = example1.select_example1(self.conn, sort=example1.Sort.id)
         # 件数の確認
@@ -211,9 +210,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
-    @database_test_util.setup_load_csv(
-        'example1',
-        'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
+    @database_test_util.setup_load_csv({
+        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv'})
     def test_select_example1_sort_by_datetime_col(self):
         records = example1.select_example1(self.conn, sort=example1.Sort.datetime_col)
         # 件数の確認
@@ -224,9 +222,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[2]['id'], 12)
         self.assertEqual(records[3]['id'], 14)
 
-    @database_test_util.setup_load_csv(
-        'example1',
-        'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
+    @database_test_util.setup_load_csv({
+        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
     def test_select_example1_order_by_asc(self):
         records = example1.select_example1(self.conn, order=example1.Order.asc)
         # 件数の確認
@@ -236,9 +233,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
-    @database_test_util.setup_load_csv(
-        'example1',
-        'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
+    @database_test_util.setup_load_csv({
+        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv'})
     def test_select_example1_order_by_desc(self):
         records = example1.select_example1(self.conn,
                                            sort=example1.Sort.datetime_col,
