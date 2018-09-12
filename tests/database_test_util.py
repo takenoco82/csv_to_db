@@ -1,6 +1,6 @@
 from app import database_connection
 from functools import wraps
-import pandas
+import csv
 
 
 def setup_load_csv(file_dict: dict, truncate: bool=True):
@@ -68,22 +68,24 @@ def load_csv(conn, table, filepath, truncate=True):
     Returns:
         なし
     '''
-    dataframe = pandas.read_csv(filepath)
-    # 「-」は空文字列に置き換える
-    dataframe = dataframe.replace('-', '')
-    # 欠損値（NaN）はNoneに置き換える
-    dataframe = dataframe.where((pandas.notnull(dataframe)), None)
-
     try:
         _set_foreign_key_checks_disabled(conn)
 
+        conn.begin()
         if truncate:
             _truncate(conn, table)
 
-        header = dataframe.columns.values
-        for row in dataframe.itertuples(index=False, name=None):
-            _insert(conn, table, header, row)
+        with open(filepath, mode='r', encoding='utf_8') as f:
+            csv_reader = csv.reader(f, delimiter=',', quotechar='"')
+            header = next(csv_reader)
+            # print('header={}'.format(header))
 
+            for row in csv_reader:
+                _insert(conn, table, header, row)
+
+    except Exception as e:
+        conn.rollback()
+        raise e
     finally:
         _set_foreign_key_checks_enabled(conn)
 
@@ -101,7 +103,7 @@ def _set_foreign_key_checks_enabled(conn):
 
 
 def _truncate(conn, table):
-    sql = "TRUNCATE TABLE {table}".format(table=table)
+    sql = "DELETE FROM {table}".format(table=table)
     with conn.cursor() as cur:
         cur.execute(sql)
 
@@ -110,7 +112,7 @@ def _insert(conn, table, columns, values):
     # TODO: csvファイル内では同じものなので、作成するのは1回だけにしたい
     sql = _create_insert_sql(table, columns)
     with conn.cursor() as cur:
-        cur.execute(sql, values)
+        cur.execute(sql, (_convert_value(value) for value in values))
 
 
 def _create_insert_sql(table, columns):
@@ -127,11 +129,28 @@ def _create_insert_sql(table, columns):
     return sql
 
 
+def _convert_value(value):
+    '''DBに登録する値に変換する
+
+    '': None,
+    '-': '',
+    上記以外: そのまま
+    '''
+
+    if value == '':
+        return None
+    if value == '-':
+        return ''
+    return value
+
+
 def main():
     conn = database_connection.get_connection()
     load_csv(conn,
              'example1',
-             'tests/data/example1_test_load_csv_error.csv')
+             #   'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
+             'tests/data/example1_test_load_csv.csv')
+    conn.commit()
 
 
 if __name__ == '__main__':
