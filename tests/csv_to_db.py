@@ -3,7 +3,7 @@ from functools import wraps
 import csv
 
 
-def setup_load_csv(file_dict: dict, truncate: bool=True):
+def init(file_dict: dict, truncate: bool=True):
     """load_csv()を実行するデコレータです.
     ※load_csv()とは違いコミットします
 
@@ -23,7 +23,7 @@ def setup_load_csv(file_dict: dict, truncate: bool=True):
             Defaults to True.
             登録前に削除を行うかどうか。Trueの場合、削除を行う。
     """
-    def _setup_load_csv(func):
+    def _init(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -34,7 +34,7 @@ def setup_load_csv(file_dict: dict, truncate: bool=True):
             conn.close()
             return func(*args, **kwargs)
         return wrapper
-    return _setup_load_csv
+    return _init
 
 
 def load_csv(conn, table: str, filepath: str, truncate: bool=True):
