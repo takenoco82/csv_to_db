@@ -21,7 +21,7 @@ def setup_load_csv(file_dict: dict, truncate: bool=True):
             key=テーブル名, value=ファイルパス
         truncate (bool, optional):
             Defaults to True.
-            登録前にTRUNCATEを行うかどうか。Trueの場合、TRUNCATEを行う。
+            登録前に削除を行うかどうか。Trueの場合、削除を行う。
     """
     def _setup_load_csv(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
@@ -37,7 +37,7 @@ def setup_load_csv(file_dict: dict, truncate: bool=True):
     return _setup_load_csv
 
 
-def load_csv(conn, table, filepath, truncate=True):
+def load_csv(conn, table: str, filepath: str, truncate: bool=True):
     '''
     指定されたcsvファイルの内容をテーブルに登録します.
     ※コミットはしません
@@ -60,10 +60,15 @@ def load_csv(conn, table, filepath, truncate=True):
         一時的に無効にし、最後に有効にしています
 
     Args:
-        conn: DBコネクション
-        table: 初期化するテーブル名
-        filepath: csvファイルのパス
-        truncate: もとのデータを削除してから登録するかどうか。Trueの場合、もとのデータを削除する。デフォルト: True
+        conn:
+            DBコネクション
+        table (str):
+            初期化するテーブル名
+        filepath (str):
+            csvファイルのパス
+        truncate (bool, optional):
+            Defaults to True.
+            登録前に削除を行うかどうか。Trueの場合、削除を行う。
 
     Returns:
         なし
