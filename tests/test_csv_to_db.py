@@ -1,14 +1,14 @@
 from app import database_connection
-from tests import database_test_util
-from tests.database_test_util import setup_load_csv
+from tests import csv_to_db
+from tests.csv_to_db import setup_load_csv
 from datetime import datetime
 import unittest
 import _mysql_exceptions
 
 
-class Test_database_test_util(unittest.TestCase):
+class Test_csv_to_db(unittest.TestCase):
     '''
-    tests.database_test_util のテストです
+    tests.csv_to_db のテストです
     '''
 
     @classmethod
@@ -62,9 +62,9 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['datetime_col'], None)
 
         # csvファイル内容で初期化
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv')
+        csv_to_db.load_csv(self.conn,
+                           'example1',
+                           'tests/data/example1_test_load_csv.csv')
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -126,12 +126,12 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['col1'], 'ahaha')
 
         # csvファイル内容で初期化
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv')
-        database_test_util.load_csv(self.conn,
-                                    'example2',
-                                    'tests/data/example2_test_load_csv.csv')
+        csv_to_db.load_csv(self.conn,
+                           'example1',
+                           'tests/data/example1_test_load_csv.csv')
+        csv_to_db.load_csv(self.conn,
+                           'example2',
+                           'tests/data/example2_test_load_csv.csv')
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -168,10 +168,10 @@ class Test_database_test_util(unittest.TestCase):
     # データの初期化をしない場合
     def test_load_csv_success_no_truncate(self):
         # csvファイル内容を登録
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv',
-                                    truncate=False)
+        csv_to_db.load_csv(self.conn,
+                           'example1',
+                           'tests/data/example1_test_load_csv.csv',
+                           truncate=False)
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -206,9 +206,9 @@ class Test_database_test_util(unittest.TestCase):
     # csvファイルが見つからない場合
     def test_load_csv_error_file_not_found(self):
         with self.assertRaises(FileNotFoundError):
-            database_test_util.load_csv(self.conn,
-                                        'example1',
-                                        'path/to/example1_test_load_csv.csv')
+            csv_to_db.load_csv(self.conn,
+                               'example1',
+                               'path/to/example1_test_load_csv.csv')
 
         # テーブルが変更されてないことを確認
         sql = "SELECT * FROM example1 ORDER BY id"
@@ -226,16 +226,16 @@ class Test_database_test_util(unittest.TestCase):
     # テーブルが存在しない場合
     def test_load_csv_error_table_not_found(self):
         with self.assertRaises(_mysql_exceptions.ProgrammingError):
-            database_test_util.load_csv(self.conn,
-                                        'example9',
-                                        'tests/data/example1_test_load_csv.csv')
+            csv_to_db.load_csv(self.conn,
+                               'example9',
+                               'tests/data/example1_test_load_csv.csv')
 
     # csvファイルのデータとテーブル定義が一致しない場合
     def test_load_csv_error_type(self):
         with self.assertRaises(_mysql_exceptions.OperationalError):
-            database_test_util.load_csv(self.conn,
-                                        'example1',
-                                        'tests/data/example1_test_load_csv_error.csv')
+            csv_to_db.load_csv(self.conn,
+                               'example1',
+                               'tests/data/example1_test_load_csv_error.csv')
 
     @setup_load_csv({'example1': 'tests/data/example1_test_load_csv.csv'})
     def test_setup_load_csv_success(self):
