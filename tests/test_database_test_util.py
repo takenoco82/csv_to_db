@@ -288,3 +288,11 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['id'], 101)
         record = records[1]
         self.assertEqual(record['id'], 102)
+
+
+def main():
+    unittest.main()
+
+
+if __name__ == '__main__':
+    main()
