@@ -23,7 +23,7 @@ class Test_select_example1_by_id(unittest.TestCase):
     def setUpClass(cls):
         cls.conn = database_connection.get_connection()
         # データ初期化
-        csv_to_db.load_csv(
+        csv_to_db.load(
             cls.conn,
             'example1',
             'tests/data/test_example1/example1_test_select_example1_by_id.csv')
@@ -81,7 +81,7 @@ class Test_select_example1(unittest.TestCase):
 
     def setUp(self):
         # データ初期化
-        csv_to_db.load_csv(
+        csv_to_db.load(
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_select_example1.csv')
@@ -263,7 +263,7 @@ class Test_insert_example1(unittest.TestCase):
 
     def setUp(self):
         # データ初期化
-        csv_to_db.load_csv(
+        csv_to_db.load(
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_insert_example1.csv')
@@ -309,7 +309,7 @@ class Test_delete_example1_by_id(unittest.TestCase):
 
     def setUp(self):
         # データ初期化
-        csv_to_db.load_csv(
+        csv_to_db.load(
             self.conn,
             'example1',
             'tests/data/test_example1/example1_test_delete_example1_by_id.csv')

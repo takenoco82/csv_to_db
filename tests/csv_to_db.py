@@ -4,8 +4,8 @@ import csv
 
 
 def init(file_dict: dict, truncate: bool=True):
-    """load_csv()を実行するデコレータです.
-    ※load_csv()とは違いコミットします
+    """load()を実行するデコレータです.
+    ※load()とは違いコミットします
 
     使用時の注意事項
         テストメソッドのトランザクションとデコレータのトランザクションが異なるため、
@@ -29,7 +29,7 @@ def init(file_dict: dict, truncate: bool=True):
         def wrapper(*args, **kwargs):
             conn = database_connection.get_connection()
             for table, filepath in file_dict.items():
-                load_csv(conn, table, filepath, truncate=truncate)
+                load(conn, table, filepath, truncate=truncate)
             conn.commit()
             conn.close()
             return func(*args, **kwargs)
@@ -37,7 +37,7 @@ def init(file_dict: dict, truncate: bool=True):
     return _init
 
 
-def load_csv(conn, table: str, filepath: str, truncate: bool=True):
+def load(conn, table: str, filepath: str, truncate: bool=True):
     '''
     指定されたcsvファイルの内容をテーブルに登録します.
     ※コミットはしません
@@ -151,10 +151,10 @@ def _convert_value(value):
 
 def main():
     conn = database_connection.get_connection()
-    load_csv(conn,
-             'example1',
-             #   'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
-             'tests/data/example1_test_load_csv.csv')
+    load(conn,
+         'example1',
+         #   'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
+         'tests/data/example1_test_load_csv.csv')
     conn.commit()
 
 

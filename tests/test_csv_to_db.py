@@ -61,7 +61,7 @@ class Test_csv_to_db(unittest.TestCase):
         self.assertEqual(record['datetime_col'], None)
 
         # csvファイル内容で初期化
-        csv_to_db.load_csv(self.conn,
+        csv_to_db.load(self.conn,
                            'example1',
                            'tests/data/example1_test_load_csv.csv')
         self.conn.commit()
@@ -125,10 +125,10 @@ class Test_csv_to_db(unittest.TestCase):
         self.assertEqual(record['col1'], 'ahaha')
 
         # csvファイル内容で初期化
-        csv_to_db.load_csv(self.conn,
+        csv_to_db.load(self.conn,
                            'example1',
                            'tests/data/example1_test_load_csv.csv')
-        csv_to_db.load_csv(self.conn,
+        csv_to_db.load(self.conn,
                            'example2',
                            'tests/data/example2_test_load_csv.csv')
         self.conn.commit()
@@ -167,7 +167,7 @@ class Test_csv_to_db(unittest.TestCase):
     # データの初期化をしない場合
     def test_load_csv_success_no_truncate(self):
         # csvファイル内容を登録
-        csv_to_db.load_csv(self.conn,
+        csv_to_db.load(self.conn,
                            'example1',
                            'tests/data/example1_test_load_csv.csv',
                            truncate=False)
@@ -205,7 +205,7 @@ class Test_csv_to_db(unittest.TestCase):
     # csvファイルが見つからない場合
     def test_load_csv_error_file_not_found(self):
         with self.assertRaises(FileNotFoundError):
-            csv_to_db.load_csv(self.conn,
+            csv_to_db.load(self.conn,
                                'example1',
                                'path/to/example1_test_load_csv.csv')
 
@@ -225,14 +225,14 @@ class Test_csv_to_db(unittest.TestCase):
     # テーブルが存在しない場合
     def test_load_csv_error_table_not_found(self):
         with self.assertRaises(_mysql_exceptions.ProgrammingError):
-            csv_to_db.load_csv(self.conn,
+            csv_to_db.load(self.conn,
                                'example9',
                                'tests/data/example1_test_load_csv.csv')
 
     # csvファイルのデータとテーブル定義が一致しない場合
     def test_load_csv_error_type(self):
         with self.assertRaises(_mysql_exceptions.OperationalError):
-            csv_to_db.load_csv(self.conn,
+            csv_to_db.load(self.conn,
                                'example1',
                                'tests/data/example1_test_load_csv_error.csv')
 
