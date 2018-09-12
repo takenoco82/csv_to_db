@@ -78,7 +78,7 @@ def load_csv(conn, table: str, filepath: str, truncate: bool=True):
 
         conn.begin()
         if truncate:
-            _truncate(conn, table)
+            _delete(conn, table)
 
         with open(filepath, mode='r', encoding='utf_8') as f:
             csv_reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -107,7 +107,7 @@ def _set_foreign_key_checks_enabled(conn):
         cur.execute(sql)
 
 
-def _truncate(conn, table):
+def _delete(conn, table):
     sql = "DELETE FROM {table}".format(table=table)
     with conn.cursor() as cur:
         cur.execute(sql)
