@@ -199,6 +199,34 @@ class Test_select_example1(unittest.TestCase):
         # 件数の確認
         self.assertEqual(len(records), 0)
 
+    @parameterized.expand([
+        # test name, condition:data(csv file), condition:sort, expected:id list
+        (
+            # id（昇順）
+            "id",
+            'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv',
+            example1.Sort.id,
+            [11, 12, 13]),
+        (
+            # datatime_col（昇順）
+            "datatime_col",
+            'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv',
+            example1.Sort.datetime_col,
+            [11, 13, 12, 14]),
+    ])
+    def test_select_example1_sort(self, _, cond_file, cond_sort, expected_ids):
+        # データ初期化
+        csv_to_db.load(self.conn, 'example1', cond_file)
+        self.conn.commit()
+
+        records = example1.select_example1(self.conn, sort=cond_sort)
+        # 件数の確認
+        self.assertEqual(len(records), len(expected_ids))
+        # データの確認
+        for i, expected_id in enumerate(expected_ids):
+            self.assertEqual(records[i]['id'], expected_id,
+                             'failed with cond_file={},cond_sort={},i={}'.format(cond_file, cond_sort, i))
+
     @csv_to_db.init({
         'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
     def test_select_example1_sort_by_id(self):
