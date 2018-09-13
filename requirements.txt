@@ -1,4 +1,3 @@
 nose
 mysqlclient
-pandas
 parameterized

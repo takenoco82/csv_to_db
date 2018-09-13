@@ -1,14 +1,13 @@
 from app import database_connection
-from tests import database_test_util
-from tests.database_test_util import setup_load_csv
+from tests import csv_to_db
 from datetime import datetime
 import unittest
 import _mysql_exceptions
 
 
-class Test_database_test_util(unittest.TestCase):
+class Test_csv_to_db(unittest.TestCase):
     '''
-    tests.database_test_util のテストです
+    tests.csv_to_db のテストです
     '''
 
     @classmethod
@@ -38,7 +37,7 @@ class Test_database_test_util(unittest.TestCase):
         pass
 
     # 1テーブルのデータの初期化
-    def test_load_csv_success(self):
+    def test_load_success(self):
         # 念のため、csvファイルをロードする前の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
         cur = self.conn.cursor()
@@ -62,9 +61,9 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['datetime_col'], None)
 
         # csvファイル内容で初期化
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv')
+        csv_to_db.load(self.conn,
+                       'example1',
+                       'tests/data/example1_test_load_csv.csv')
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -104,7 +103,7 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['datetime_col'], None)
 
     # 複数テーブルのデータの初期化
-    def test_load_csv_success_multi(self):
+    def test_load_success_multi(self):
         # データ初期化: example2
         truncate_sql_example2 = "TRUNCATE TABLE example2"
         insert_sql_example2 = "INSERT INTO example2 VALUES (%s, %s)"
@@ -126,12 +125,12 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['col1'], 'ahaha')
 
         # csvファイル内容で初期化
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv')
-        database_test_util.load_csv(self.conn,
-                                    'example2',
-                                    'tests/data/example2_test_load_csv.csv')
+        csv_to_db.load(self.conn,
+                       'example1',
+                       'tests/data/example1_test_load_csv.csv')
+        csv_to_db.load(self.conn,
+                       'example2',
+                       'tests/data/example2_test_load_csv.csv')
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -166,12 +165,12 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['col1'], 'ufufu')
 
     # データの初期化をしない場合
-    def test_load_csv_success_no_truncate(self):
+    def test_load_success_no_truncate(self):
         # csvファイル内容を登録
-        database_test_util.load_csv(self.conn,
-                                    'example1',
-                                    'tests/data/example1_test_load_csv.csv',
-                                    truncate=False)
+        csv_to_db.load(self.conn,
+                       'example1',
+                       'tests/data/example1_test_load_csv.csv',
+                       truncate=False)
         self.conn.commit()
 
         # csvファイルをロードした後の状態を確認
@@ -204,11 +203,11 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['datetime_col'], None)
 
     # csvファイルが見つからない場合
-    def test_load_csv_error_file_not_found(self):
+    def test_load_error_file_not_found(self):
         with self.assertRaises(FileNotFoundError):
-            database_test_util.load_csv(self.conn,
-                                        'example1',
-                                        'path/to/example1_test_load_csv.csv')
+            csv_to_db.load(self.conn,
+                           'example1',
+                           'path/to/example1_test_load_csv.csv')
 
         # テーブルが変更されてないことを確認
         sql = "SELECT * FROM example1 ORDER BY id"
@@ -224,21 +223,21 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['id'], 2)
 
     # テーブルが存在しない場合
-    def test_load_csv_error_table_not_found(self):
+    def test_load_error_table_not_found(self):
         with self.assertRaises(_mysql_exceptions.ProgrammingError):
-            database_test_util.load_csv(self.conn,
-                                        'example9',
-                                        'tests/data/example1_test_load_csv.csv')
+            csv_to_db.load(self.conn,
+                           'example9',
+                           'tests/data/example1_test_load_csv.csv')
 
     # csvファイルのデータとテーブル定義が一致しない場合
-    def test_load_csv_error_type(self):
+    def test_load_error_type(self):
         with self.assertRaises(_mysql_exceptions.OperationalError):
-            database_test_util.load_csv(self.conn,
-                                        'example1',
-                                        'tests/data/example1_test_load_csv_error.csv')
+            csv_to_db.load(self.conn,
+                           'example1',
+                           'tests/data/example1_test_load_csv_error.csv')
 
-    @setup_load_csv({'example1': 'tests/data/example1_test_load_csv.csv'})
-    def test_setup_load_csv_success(self):
+    @csv_to_db.init({'example1': 'tests/data/example1_test_load_csv.csv'})
+    def test_init_success_one(self):
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
         cur = self.conn.cursor()
@@ -256,10 +255,10 @@ class Test_database_test_util(unittest.TestCase):
         record = records[3]
         self.assertEqual(record['id'], 14)
 
-    @setup_load_csv({
+    @csv_to_db.init({
         'example1': 'tests/data/example1_test_load_csv.csv',
         'example2': 'tests/data/example2_test_load_csv.csv'})
-    def test_setup_load_csv_success_multi(self):
+    def test_init_success_multi(self):
         # csvファイルをロードした後の状態を確認
         sql = "SELECT * FROM example1 ORDER BY id"
         cur = self.conn.cursor()
@@ -288,3 +287,11 @@ class Test_database_test_util(unittest.TestCase):
         self.assertEqual(record['id'], 101)
         record = records[1]
         self.assertEqual(record['id'], 102)
+
+
+def main():
+    unittest.main()
+
+
+if __name__ == '__main__':
+    main()

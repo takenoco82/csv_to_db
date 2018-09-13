@@ -1,11 +1,11 @@
 from app import database_connection
 from functools import wraps
-import pandas
+import csv
 
 
-def setup_load_csv(file_dict: dict, truncate: bool=True):
-    """load_csv()を実行するデコレータです.
-    ※load_csv()とは違いコミットします
+def init(file_dict: dict, truncate: bool=True):
+    """load()を実行するデコレータです.
+    ※load()とは違いコミットします
 
     使用時の注意事項
         テストメソッドのトランザクションとデコレータのトランザクションが異なるため、
@@ -21,23 +21,23 @@ def setup_load_csv(file_dict: dict, truncate: bool=True):
             key=テーブル名, value=ファイルパス
         truncate (bool, optional):
             Defaults to True.
-            登録前にTRUNCATEを行うかどうか。Trueの場合、TRUNCATEを行う。
+            登録前に削除を行うかどうか。Trueの場合、削除を行う。
     """
-    def _setup_load_csv(func):
+    def _init(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
         @wraps(func)
         def wrapper(*args, **kwargs):
             conn = database_connection.get_connection()
             for table, filepath in file_dict.items():
-                load_csv(conn, table, filepath, truncate=truncate)
+                load(conn, table, filepath, truncate=truncate)
             conn.commit()
             conn.close()
             return func(*args, **kwargs)
         return wrapper
-    return _setup_load_csv
+    return _init
 
 
-def load_csv(conn, table, filepath, truncate=True):
+def load(conn, table: str, filepath: str, truncate: bool=True):
     '''
     指定されたcsvファイルの内容をテーブルに登録します.
     ※コミットはしません
@@ -60,30 +60,37 @@ def load_csv(conn, table, filepath, truncate=True):
         一時的に無効にし、最後に有効にしています
 
     Args:
-        conn: DBコネクション
-        table: 初期化するテーブル名
-        filepath: csvファイルのパス
-        truncate: もとのデータを削除してから登録するかどうか。Trueの場合、もとのデータを削除する。デフォルト: True
+        conn:
+            DBコネクション
+        table (str):
+            初期化するテーブル名
+        filepath (str):
+            csvファイルのパス
+        truncate (bool, optional):
+            Defaults to True.
+            登録前に削除を行うかどうか。Trueの場合、削除を行う。
 
     Returns:
         なし
     '''
-    dataframe = pandas.read_csv(filepath)
-    # 「-」は空文字列に置き換える
-    dataframe = dataframe.replace('-', '')
-    # 欠損値（NaN）はNoneに置き換える
-    dataframe = dataframe.where((pandas.notnull(dataframe)), None)
-
     try:
         _set_foreign_key_checks_disabled(conn)
 
+        conn.begin()
         if truncate:
-            _truncate(conn, table)
+            _delete(conn, table)
 
-        header = dataframe.columns.values
-        for row in dataframe.itertuples(index=False, name=None):
-            _insert(conn, table, header, row)
+        with open(filepath, mode='r', encoding='utf_8') as f:
+            csv_reader = csv.reader(f, delimiter=',', quotechar='"')
+            header = next(csv_reader)
+            # print('header={}'.format(header))
 
+            for row in csv_reader:
+                _insert(conn, table, header, row)
+
+    except Exception as e:
+        conn.rollback()
+        raise e
     finally:
         _set_foreign_key_checks_enabled(conn)
 
@@ -100,8 +107,8 @@ def _set_foreign_key_checks_enabled(conn):
         cur.execute(sql)
 
 
-def _truncate(conn, table):
-    sql = "TRUNCATE TABLE {table}".format(table=table)
+def _delete(conn, table):
+    sql = "DELETE FROM {table}".format(table=table)
     with conn.cursor() as cur:
         cur.execute(sql)
 
@@ -110,7 +117,7 @@ def _insert(conn, table, columns, values):
     # TODO: csvファイル内では同じものなので、作成するのは1回だけにしたい
     sql = _create_insert_sql(table, columns)
     with conn.cursor() as cur:
-        cur.execute(sql, values)
+        cur.execute(sql, (_convert_value(value) for value in values))
 
 
 def _create_insert_sql(table, columns):
@@ -127,11 +134,28 @@ def _create_insert_sql(table, columns):
     return sql
 
 
+def _convert_value(value):
+    '''DBに登録する値に変換する
+
+    '': None,
+    '-': '',
+    上記以外: そのまま
+    '''
+
+    if value == '':
+        return None
+    if value == '-':
+        return ''
+    return value
+
+
 def main():
     conn = database_connection.get_connection()
-    load_csv(conn,
-             'example1',
-             'tests/data/example1_test_load_csv_error.csv')
+    load(conn,
+         'example1',
+         #   'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
+         'tests/data/example1_test_load_csv.csv')
+    conn.commit()
 
 
 if __name__ == '__main__':
