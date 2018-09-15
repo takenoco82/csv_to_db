@@ -2,4 +2,5 @@
     "path-intellisense.mappings": {
         "tests": "${workspaceRoot}/tests",
     },
+    "open-file-from-path.startingPath": "/,tests/",
 }
