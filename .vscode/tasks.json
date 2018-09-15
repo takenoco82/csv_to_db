@@ -28,9 +28,9 @@
             }
         },
         {
-            "label": "nosetests Current file",
+            "label": "nosetests: Current File",
             "type": "shell",
-            "command": "nosetests -v ${relativeFile}",
+            "command": "nosetests -v --nologcapture ${relativeFile}",
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -59,9 +59,9 @@
             }
         },
         {
-            "label": "nosetests All files",
+            "label": "nosetests: All Files",
             "type": "shell",
-            "command": "nosetests -v ${workspaceRoot}/python",
+            "command": "nosetests -v --nologcapture ${workspaceRoot}/tests",
             "group": "test",
             "presentation": {
                 "echo": true,

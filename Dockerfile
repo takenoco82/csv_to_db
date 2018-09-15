@@ -5,10 +5,12 @@ ENV PYTHONPATH=/using-pandas:$PYTHONPATH
 
 # パッケージのインストール
 RUN apk add --no-cache \
-    # mysqlclient
-    musl-dev \
+    # PyMySQL
+    linux-headers \
     gcc \
-    mariadb-dev
+    g++ \
+    libffi-dev \
+    openssl-dev
 
 # ライブラリをインストール
 COPY ./requirements.txt /root

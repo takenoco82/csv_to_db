@@ -2,7 +2,6 @@ from app import database_connection
 from tests import csv_to_db
 from datetime import datetime
 import unittest
-import _mysql_exceptions
 
 
 class Test_csv_to_db(unittest.TestCase):
@@ -224,14 +223,14 @@ class Test_csv_to_db(unittest.TestCase):
 
     # テーブルが存在しない場合
     def test_load_error_table_not_found(self):
-        with self.assertRaises(_mysql_exceptions.ProgrammingError):
+        with self.assertRaises(Exception):
             csv_to_db.load(self.conn,
                            'example9',
                            'tests/data/example1_test_load_csv.csv')
 
     # csvファイルのデータとテーブル定義が一致しない場合
     def test_load_error_type(self):
-        with self.assertRaises(_mysql_exceptions.OperationalError):
+        with self.assertRaises(Exception):
             csv_to_db.load(self.conn,
                            'example1',
                            'tests/data/example1_test_load_csv_error.csv')
