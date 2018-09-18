@@ -4,6 +4,7 @@ from datetime import datetime
 from app import database_connection
 from app import example1
 from tests import csv_to_db
+from collections import namedtuple
 
 
 def count_example1(conn):
@@ -101,43 +102,47 @@ class Test_select_example1(unittest.TestCase):
             with self.subTest(i=i):
                 self.assertEqual(records[i]['id'], expected_id)
 
+    # arg: start
+    # arg: end
+    # return: idのみのリスト
+    Fixture1 = namedtuple('Fixture1', ('start', 'end', 'expected'))
+
     @parameterized.expand([
-        # condition:start, condition:end, expected:id list
-        (
-            # startのみ指定
-            datetime(2018, 1, 1, 0, 0, 0),
-            None,
-            [12, 13, 14, 15, 16, 17]),
-        (
-            # endのみ指定
-            None,
-            datetime(2018, 1, 2, 0, 0, 0),
-            [11, 12, 13, 14, 15, 16]),
-        (
-            # start, end両方指定
-            datetime(2018, 1, 1, 0, 0, 0),
-            datetime(2018, 1, 2, 0, 0, 0),
-            [12, 13, 14, 15, 16]),
-        (
-            # start, endが同じ
-            datetime(2018, 1, 1, 0, 0, 0),
-            datetime(2018, 1, 1, 0, 0, 0),
-            [12]),
-        (
-            # end < データの日付 -> 取得データなし
-            datetime(2017, 12, 31, 0, 0, 0),
-            datetime(2017, 12, 31, 23, 59, 58),
-            []),
+        # startのみ指定
+        Fixture1(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=None,
+            expected=[12, 13, 14, 15, 16, 17]),
+        # endのみ指定
+        Fixture1(
+            start=None,
+            end=datetime(2018, 1, 2, 0, 0, 0),
+            expected=[11, 12, 13, 14, 15, 16]),
+        # start, end両方指定
+        Fixture1(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=datetime(2018, 1, 2, 0, 0, 0),
+            expected=[12, 13, 14, 15, 16]),
+        # start, endが同じ
+        Fixture1(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=datetime(2018, 1, 1, 0, 0, 0),
+            expected=[12]),
+        # end < データの日付 -> 取得データなし
+        Fixture1(
+            start=datetime(2017, 12, 31, 0, 0, 0),
+            end=datetime(2017, 12, 31, 23, 59, 58),
+            expected=[]),
     ])
-    def test_select_example1_parameterized_start_end(self, cond_start, cond_end, expected_ids):
-        records = example1.select_example1(self.conn, start=cond_start, end=cond_end)
+    def test_select_example1_parameterized_start_end(self, start, end, expected):
+        records = example1.select_example1(self.conn, start=start, end=end)
         # 件数の確認
         self.assertEqual(
-            len(records), len(expected_ids),
-            'failed with cond_start={},cond_end={}'.format(cond_start, cond_end))
+            len(records), len(expected),
+            'failed with cond_start={},cond_end={}'.format(start, end))
         # データの確認
         actual = [record['id'] for record in records]
-        self.assertListEqual(actual, expected_ids)
+        self.assertListEqual(actual, expected)
 
     def test_select_example1_start(self):
         records = example1.select_example1(
@@ -199,22 +204,27 @@ class Test_select_example1(unittest.TestCase):
         # 件数の確認
         self.assertEqual(len(records), 0)
 
+    # test name
+    # data: example1のデータ(csvファイル)
+    # arg: sort
+    # return: idのみのリスト
+    Fixture2 = namedtuple('Fixture2', ('name', 'example1_file', 'sort', 'expected'))
+
     @parameterized.expand([
-        # test name, condition:data(csv file), condition:sort, expected:id list
-        (
-            # id（昇順）
-            "id",
-            'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv',
-            example1.Sort.id,
-            [11, 12, 13]),
-        (
-            # datatime_col（昇順）
-            "datatime_col",
-            'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv',
-            example1.Sort.datetime_col,
-            [11, 13, 12, 14]),
+        # id（昇順）
+        Fixture2(
+            name="id",
+            example1_file='tests/data/test_example1/example1_test_select_example1_sort_by_id.csv',
+            sort=example1.Sort.id,
+            expected=[11, 12, 13]),
+        # datatime_col（昇順）
+        Fixture2(
+            name="datatime_col",
+            example1_file='tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv',
+            sort=example1.Sort.datetime_col,
+            expected=[11, 13, 12, 14]),
     ])
-    def test_select_example1_sort(self, _, cond_file, cond_sort, expected_ids):
+    def test_select_example1_sort_parameterized(self, _, cond_file, cond_sort, expected_ids):
         # データ初期化
         csv_to_db.load(self.conn, 'example1', cond_file)
         self.conn.commit()
@@ -226,6 +236,41 @@ class Test_select_example1(unittest.TestCase):
         for i, expected_id in enumerate(expected_ids):
             self.assertEqual(records[i]['id'], expected_id,
                              'failed with cond_file={},cond_sort={},i={}'.format(cond_file, cond_sort, i))
+
+    def test_select_example1_sort_subtest(self):
+        # test name
+        # data: example1のデータ(csvファイル)
+        # arg: sort
+        # return: idのみのリスト
+        Fixture2 = namedtuple('Fixture2', ('name', 'example1_file', 'sort', 'expected'))
+
+        fixtures = [
+            # id（昇順）
+            Fixture2(
+                name="id",
+                example1_file='tests/data/test_example1/example1_test_select_example1_sort_by_id.csv',
+                sort=example1.Sort.id,
+                expected=[11, 12, 13]),
+            # datatime_col（昇順）
+            Fixture2(
+                name="datatime_col",
+                example1_file='tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv',
+                sort=example1.Sort.datetime_col,
+                expected=[11, 13, 12, 14]),
+        ]
+
+        for fixture in fixtures:
+            with self.subTest(fixture=fixture):
+                # データ初期化
+                csv_to_db.load(self.conn, 'example1', fixture.example1_file)
+                self.conn.commit()
+
+                records = example1.select_example1(self.conn, sort=fixture.sort)
+                # 件数の確認
+                self.assertEqual(len(records), len(fixture.expected))
+                # データの確認
+                actual = [record['id'] for record in records]
+                self.assertListEqual(actual, fixture.expected)
 
     @csv_to_db.init({
         'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
