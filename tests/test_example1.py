@@ -1,5 +1,5 @@
 import unittest
-from parameterized import parameterized
+from parameterized import parameterized, param
 from datetime import datetime
 from app import database_connection
 from app import example1
@@ -135,6 +135,47 @@ class Test_select_example1(unittest.TestCase):
             expected=[]),
     ])
     def test_select_example1_parameterized_start_end(self, start, end, expected):
+        records = example1.select_example1(self.conn, start=start, end=end)
+        # 件数の確認
+        self.assertEqual(
+            len(records), len(expected),
+            'failed with cond_start={},cond_end={}'.format(start, end))
+        # データの確認
+        actual = [record['id'] for record in records]
+        self.assertListEqual(actual, expected)
+
+    # param
+    #   arg: start
+    #   arg: end
+    #   return: idのみのリスト
+    @parameterized.expand([
+        # startのみ指定
+        param(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=None,
+            expected=[12, 13, 14, 15, 16, 17]),
+        # endのみ指定
+        param(
+            start=None,
+            end=datetime(2018, 1, 2, 0, 0, 0),
+            expected=[11, 12, 13, 14, 15, 16]),
+        # start, end両方指定
+        param(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=datetime(2018, 1, 2, 0, 0, 0),
+            expected=[12, 13, 14, 15, 16]),
+        # start, endが同じ
+        param(
+            start=datetime(2018, 1, 1, 0, 0, 0),
+            end=datetime(2018, 1, 1, 0, 0, 0),
+            expected=[12]),
+        # end < データの日付 -> 取得データなし
+        param(
+            start=datetime(2017, 12, 31, 0, 0, 0),
+            end=datetime(2017, 12, 31, 23, 59, 58),
+            expected=[]),
+    ])
+    def test_select_example1_parameterized_start_end2(self, start, end, expected):
         records = example1.select_example1(self.conn, start=start, end=end)
         # 件数の確認
         self.assertEqual(
