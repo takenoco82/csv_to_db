@@ -97,7 +97,9 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(len(records), len(expected_ids))
         # データの確認
         for i, expected_id in enumerate(expected_ids):
-            self.assertEqual(records[i]['id'], expected_id, 'failed with i={}'.format(i))
+            # subTestを使うとFAIL時に条件がわかる（unittestで実行していれば）
+            with self.subTest(i=i):
+                self.assertEqual(records[i]['id'], expected_id)
 
     @parameterized.expand([
         # condition:start, condition:end, expected:id list
