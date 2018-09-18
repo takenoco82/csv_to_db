@@ -136,10 +136,8 @@ class Test_select_example1(unittest.TestCase):
             len(records), len(expected_ids),
             'failed with cond_start={},cond_end={}'.format(cond_start, cond_end))
         # データの確認
-        for i, expected_id in enumerate(expected_ids):
-            self.assertEqual(
-                records[i]['id'], expected_id,
-                'failed with cond_start={},cond_end={},i={}'.format(cond_start, cond_end, i))
+        actual = [record['id'] for record in records]
+        self.assertListEqual(actual, expected_ids)
 
     def test_select_example1_start(self):
         records = example1.select_example1(
