@@ -1,0 +1,39 @@
+{
+    "recommendations": [
+        // python
+        "ms-python.python",
+        "njpwerner.autodocstring",
+        // js
+        "dbaeumer.vscode-eslint",
+        "octref.vetur",
+        // "msjsdiag.debugger-for-chrome",
+        // markdown
+        "yzhang.markdown-all-in-one",
+        "shd101wyy.markdown-preview-enhanced",
+        "mushan.vscode-paste-image",
+        // yaml
+        "redhat.vscode-yaml",
+        // csv
+        "grapecity.gc-excelviewer",
+        // docker
+        "peterjausovec.vscode-docker",
+        // git
+        "eamodio.gitlens",
+        // coding support
+        "robertohuertasm.vscode-icons",
+        "alefragnani.bookmarks",
+        "gruntfuggly.todo-tree",
+        "coenraads.bracket-pair-colorizer",
+        "wmaurer.change-case",
+        "christian-kohler.path-intellisense",
+        "jack89ita.open-file-from-path",
+        "saikou9901.evilinspector",
+        // "mksafi.find-jump",
+        // other
+        "ms-ceintl.vscode-language-pack-ja",
+        "eamodio.restore-editors",
+        // try later
+        // "ms-vsliveshare.vsliveshare",
+        // "tokoph.ghosttext"
+    ]
+}
