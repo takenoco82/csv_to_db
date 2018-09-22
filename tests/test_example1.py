@@ -26,8 +26,7 @@ class Test_select_example1_by_id(unittest.TestCase):
         # データ初期化
         csv_to_db.load(
             cls.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1_by_id.csv')
+            example1='tests/data/test_example1/example1_test_select_example1_by_id.csv')
         cls.conn.commit()
 
     @classmethod
@@ -84,8 +83,7 @@ class Test_select_example1(unittest.TestCase):
         # データ初期化
         csv_to_db.load(
             self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_select_example1.csv')
+            example1='tests/data/test_example1/example1_test_select_example1.csv')
         self.conn.commit()
 
     def tearDown(self):
@@ -267,7 +265,7 @@ class Test_select_example1(unittest.TestCase):
     ])
     def test_select_example1_sort_parameterized(self, _, cond_file, cond_sort, expected_ids):
         # データ初期化
-        csv_to_db.load(self.conn, 'example1', cond_file)
+        csv_to_db.load(self.conn, example1=cond_file)
         self.conn.commit()
 
         records = example1.select_example1(self.conn, sort=cond_sort)
@@ -303,7 +301,7 @@ class Test_select_example1(unittest.TestCase):
         for fixture in fixtures:
             with self.subTest(fixture=fixture):
                 # データ初期化
-                csv_to_db.load(self.conn, 'example1', fixture.example1_file)
+                csv_to_db.load(self.conn, example1=fixture.example1_file)
                 self.conn.commit()
 
                 records = example1.select_example1(self.conn, sort=fixture.sort)
@@ -313,8 +311,8 @@ class Test_select_example1(unittest.TestCase):
                 actual = [record['id'] for record in records]
                 self.assertListEqual(actual, fixture.expected)
 
-    @csv_to_db.init({
-        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
+    @csv_to_db.setup_load(
+        example1='tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
     def test_select_example1_sort_by_id(self):
         records = example1.select_example1(self.conn, sort=example1.Sort.id)
         # 件数の確認
@@ -324,8 +322,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
-    @csv_to_db.init({
-        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv'})
+    @csv_to_db.setup_load(
+        example1='tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
     def test_select_example1_sort_by_datetime_col(self):
         records = example1.select_example1(self.conn, sort=example1.Sort.datetime_col)
         # 件数の確認
@@ -336,8 +334,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[2]['id'], 12)
         self.assertEqual(records[3]['id'], 14)
 
-    @csv_to_db.init({
-        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_id.csv'})
+    @csv_to_db.setup_load(
+        example1='tests/data/test_example1/example1_test_select_example1_sort_by_id.csv')
     def test_select_example1_order_by_asc(self):
         records = example1.select_example1(self.conn, order=example1.Order.asc)
         # 件数の確認
@@ -347,8 +345,8 @@ class Test_select_example1(unittest.TestCase):
         self.assertEqual(records[1]['id'], 12)
         self.assertEqual(records[2]['id'], 13)
 
-    @csv_to_db.init({
-        'example1': 'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv'})
+    @csv_to_db.setup_load(
+        example1='tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
     def test_select_example1_order_by_desc(self):
         records = example1.select_example1(self.conn,
                                            sort=example1.Sort.datetime_col,
@@ -379,8 +377,7 @@ class Test_insert_example1(unittest.TestCase):
         # データ初期化
         csv_to_db.load(
             self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_insert_example1.csv')
+            example1='tests/data/test_example1/example1_test_insert_example1.csv')
         self.conn.commit()
 
     def tearDown(self):
@@ -425,8 +422,7 @@ class Test_delete_example1_by_id(unittest.TestCase):
         # データ初期化
         csv_to_db.load(
             self.conn,
-            'example1',
-            'tests/data/test_example1/example1_test_delete_example1_by_id.csv')
+            example1='tests/data/test_example1/example1_test_delete_example1_by_id.csv')
         self.conn.commit()
 
     def tearDown(self):

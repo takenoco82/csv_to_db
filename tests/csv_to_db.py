@@ -3,7 +3,7 @@ from functools import wraps
 import csv
 
 
-def init(file_dict: dict, truncate: bool=True):
+def setup_load(truncate: bool=True, **targets):
     """load()を実行するデコレータです.
     ※load()とは違いコミットします
 
@@ -15,30 +15,28 @@ def init(file_dict: dict, truncate: bool=True):
 
         metadata lockの最も簡単な回避策は、
         setUp()でcommit()またはrollback()を行うことです。
-
-    Args:
-        file_dict (dict):
-            key=テーブル名, value=ファイルパス
-        truncate (bool, optional):
-            Defaults to True.
-            登録前に削除を行うかどうか。Trueの場合、削除を行う。
     """
-    def _init(func):
+    def _setup_load(func):
         # 関数名がデコレータで上書きされてしまうのを防ぐ
         @wraps(func)
         def wrapper(*args, **kwargs):
-            conn = database_connection.get_connection()
-            for table, filepath in file_dict.items():
-                load(conn, table, filepath, truncate=truncate)
-            conn.commit()
-            conn.close()
+            try:
+                conn = database_connection.get_connection()
+                conn.begin()
+                load(conn, truncate=truncate, **targets)
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
             return func(*args, **kwargs)
         return wrapper
-    return _init
+    return _setup_load
 
 
-def load(conn, table: str, filepath: str, truncate: bool=True):
-    '''
+def load(conn, truncate: bool=True, **targets):
+    """
     指定されたcsvファイルの内容をテーブルに登録します.
     ※コミットはしません
 
@@ -62,35 +60,28 @@ def load(conn, table: str, filepath: str, truncate: bool=True):
     Args:
         conn:
             DBコネクション
-        table (str):
-            初期化するテーブル名
-        filepath (str):
-            csvファイルのパス
         truncate (bool, optional):
             Defaults to True.
             登録前に削除を行うかどうか。Trueの場合、削除を行う。
-
-    Returns:
-        なし
-    '''
+        targets:
+            テーブル名をキーワードとしてファイルパスを指定してください。複数指定可能
+            例）
+            load(conn, USER='path/to/USER.csv', COMPANY='path/to/COMPANY.csv')
+    """
     try:
         _set_foreign_key_checks_disabled(conn)
 
-        conn.begin()
-        if truncate:
-            _delete(conn, table)
+        for table, filepath in targets.items():
+            if truncate:
+                _truncate(conn, table)
 
-        with open(filepath, mode='r', encoding='utf_8') as f:
-            csv_reader = csv.reader(f, delimiter=',', quotechar='"')
-            header = next(csv_reader)
-            # print('header={}'.format(header))
+            with open(filepath, mode='r', encoding='utf_8') as f:
+                csv_reader = csv.reader(f, delimiter=',', quotechar='"')
+                header = next(csv_reader)
 
-            for row in csv_reader:
-                _insert(conn, table, header, row)
+                for row in csv_reader:
+                    _insert(conn, table, header, row)
 
-    except Exception as e:
-        conn.rollback()
-        raise e
     finally:
         _set_foreign_key_checks_enabled(conn)
 
@@ -107,8 +98,8 @@ def _set_foreign_key_checks_enabled(conn):
         cur.execute(sql)
 
 
-def _delete(conn, table):
-    sql = "DELETE FROM {table}".format(table=table)
+def _truncate(conn, table):
+    sql = "TRUNCATE TABLE {}".format(table)
     with conn.cursor() as cur:
         cur.execute(sql)
 
@@ -152,9 +143,7 @@ def _convert_value(value):
 def main():
     conn = database_connection.get_connection()
     load(conn,
-         'example1',
-         #   'tests/data/test_example1/example1_test_select_example1_sort_by_datetime_col.csv')
-         'tests/data/example1_test_load_csv.csv')
+         example1='tests/data/example1_test_load_csv.csv')
     conn.commit()
 
 
