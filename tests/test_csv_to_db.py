@@ -30,8 +30,8 @@ INITIAL_DATA_EXAMPLE1 = [
 ]
 
 # example1のテストで取り込むcsvファイル
-TEST_FILE_EXAMPLE1 = "tests/data/example1_test_load_csv.csv"
-# example1のテストデータ（tests/data/example1_test_load_csv.csvの内容）
+TEST_FILE_EXAMPLE1 = "tests/data/csv_to_db/example1_test_load_csv.csv"
+# example1のテストデータ（tests/data/csv_to_db/example1_test_load_csv.csvの内容）
 TEST_DATA_EXAMPLE1 = [
     {
         'id': 11,
@@ -64,8 +64,8 @@ TEST_DATA_EXAMPLE1 = [
 ]
 
 # example2のテストで取り込むcsvファイル
-TEST_FILE_EXAMPLE2 = "tests/data/example2_test_load_csv.csv"
-# example1のテストデータ（tests/data/example2_test_load_csv.csvの内容）
+TEST_FILE_EXAMPLE2 = "tests/data/csv_to_db/example2_test_load_csv.csv"
+# example1のテストデータ（tests/data/csv_to_db/example2_test_load_csv.csvの内容）
 TEST_DATA_EXAMPLE2 = [
     {
         'id': 101,
@@ -244,7 +244,7 @@ class Test_csv_to_db(unittest.TestCase):
                 csv_to_db.load(
                     self.conn,
                     # int型の項目に文字列を指定
-                    example1='tests/data/example1_test_load_csv_error.csv')
+                    example1='tests/data/csv_to_db/example1_test_load_csv_error.csv')
             except Exception as e:
                 self.conn.rollback()
                 raise e
