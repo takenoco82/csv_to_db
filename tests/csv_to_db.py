@@ -1,6 +1,28 @@
-from app import database_connection
-from functools import wraps
 import csv
+import os
+import re
+from functools import wraps
+
+from app import database_connection
+
+
+def init_db(conn, csv_dir):
+    targets = {}
+
+    items = os.listdir(csv_dir)
+    for item in items:
+        filepath = os.path.join(csv_dir, item)
+        if not os.path.isfile(filepath):
+            continue
+
+        extention = os.path.splitext(item)[1]
+        if not re.match('\\.csv', extention, re.IGNORECASE):
+            continue
+
+        table = os.path.splitext(item)[0]
+        targets[table] = filepath
+
+    load(conn, **targets)
 
 
 def setup_load(truncate: bool=True, **targets):
@@ -142,9 +164,10 @@ def _convert_value(value):
 
 def main():
     conn = database_connection.get_connection()
-    load(conn,
-         example1='tests/data/example1_test_load_csv.csv')
+    conn.begin()
+    init_db(conn, csv_dir="tests/data")
     conn.commit()
+    conn.close()
 
 
 if __name__ == '__main__':
