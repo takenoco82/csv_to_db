@@ -129,6 +129,7 @@ def _truncate(conn, table):
 def _insert(conn, table, columns, values):
     # TODO: csvファイル内では同じものなので、作成するのは1回だけにしたい
     sql = _create_insert_sql(table, columns)
+    print("LOAD DATA: {}, {}".format(table, values))
     with conn.cursor() as cur:
         cur.execute(sql, [_convert_value(value) for value in values])
 
