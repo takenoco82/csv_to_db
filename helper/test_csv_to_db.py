@@ -62,6 +62,16 @@ TEST_DATA_EXAMPLE1 = [
         'datetime_col': None,
     },
 ]
+# example1のテストで取り込むtsvファイル
+TEST_FILE_EXAMPLE1_TSV = "tests/data/csv_to_db/example1_test_load.tsv"
+TEST_DATA_EXAMPLE1_TSV = TEST_DATA_EXAMPLE1[:]
+TEST_DATA_EXAMPLE1_TSV[1] = {
+    'id': 12,
+    'varchar_col': 'う\tふ',
+    'int_col': -1234567890,
+    'double_col': -123.456,
+    'datetime_col': datetime(2018, 8, 3, 0, 0, 0),
+}
 
 # example2のテストで取り込むcsvファイル
 TEST_FILE_EXAMPLE2 = "tests/data/csv_to_db/example2_test_load_csv.csv"
@@ -184,8 +194,8 @@ class Test_csv_to_db(unittest.TestCase):
 
     # csvファイルが見つからない場合
     def test_load_error_file_not_found(self):
-        # TRUNCATEされてるので（rollbackしてもデータが戻らないため）0件になる
-        expected = []
+        # TRUNCATEされないので2件のままになる
+        expected = INITIAL_DATA_EXAMPLE1
 
         # 例外の確認
         with self.assertRaises(FileNotFoundError):
@@ -199,7 +209,32 @@ class Test_csv_to_db(unittest.TestCase):
                 self.conn.rollback()
                 raise e
 
-        # 0件になっていることを確認
+        # 件数が変わっていないことを確認
+        sql = "SELECT * FROM example1 ORDER BY id"
+        with self.conn.cursor() as cur:
+            cur.execute(sql)
+            records = cur.fetchall()
+        # 件数の確認
+        self.assertEqual(len(records), len(expected))
+
+    # 拡張子がcsv、tsv以外の場合
+    def test_load_error_unsupported_extention(self):
+        # TRUNCATEされないので2件のままになる
+        expected = INITIAL_DATA_EXAMPLE1
+
+        # 例外の確認
+        with self.assertRaises(ValueError):
+            try:
+                self.conn.begin()
+                csv_to_db.load(
+                    self.conn,
+                    # 拡張子がtxtのファイルを設定（csv、tsv以外）
+                    example1='tests/data/csv_to_db/example1_test_load.txt')
+            except Exception as e:
+                self.conn.rollback()
+                raise e
+
+        # 件数が変わっていないことを確認
         sql = "SELECT * FROM example1 ORDER BY id"
         with self.conn.cursor() as cur:
             cur.execute(sql)
@@ -256,6 +291,28 @@ class Test_csv_to_db(unittest.TestCase):
             records = cur.fetchall()
         # 件数の確認
         self.assertEqual(len(records), len(expected))
+
+    # tsvファイル（タブ区切り）で初期化
+    def test_load_success_tsv(self):
+        expected = TEST_DATA_EXAMPLE1_TSV
+
+        # tsvファイル内容で初期化
+        csv_to_db.load(
+            self.conn,
+            example1=TEST_FILE_EXAMPLE1_TSV)
+        self.conn.commit()
+
+        # csvファイルをロードした後の状態を確認
+        sql = "SELECT * FROM example1 ORDER BY id"
+        with self.conn.cursor() as cur:
+            cur.execute(sql)
+            records = cur.fetchall()
+        # 件数の確認
+        self.assertEqual(len(records), len(expected))
+        # データの確認
+        for i, expected_row in enumerate(expected):
+            with self.subTest(i=i):
+                self.assertDictEqual(records[i], expected_row)
 
     @csv_to_db.setup_load(example1=TEST_FILE_EXAMPLE1)
     def test_setup_load_success(self):

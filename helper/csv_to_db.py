@@ -16,7 +16,7 @@ def init_db(conn, csv_dir):
             continue
 
         extention = os.path.splitext(item)[1]
-        if not re.match('\\.csv', extention, re.IGNORECASE):
+        if not re.match('\\.(csv|tsv)', extention, re.IGNORECASE):
             continue
 
         table = os.path.splitext(item)[0]
@@ -59,13 +59,17 @@ def setup_load(truncate: bool=True, **targets):
 
 def load(conn, truncate: bool=True, **targets):
     """
-    指定されたcsvファイルの内容をテーブルに登録します.
+    指定されたcsvファイル（tsvファイル）の内容をテーブルに登録します.
     ※コミットはしません
 
-    csvファイルについて
+    csvファイル（tsvファイル）について
         文字コードはUTF-8で作成してください
         改行コードはLFにしてください
         1行目はヘッダとし、テーブルの項目名と一致させてください
+        拡張子はcsvまたはtsvにしてください
+        区切り文字は以下の通りにしてください。
+            csvファイルの場合、カンマ（2C）
+            tsvファイルの場合、水平タブ（09）
 
     特殊な値の登録について
         空文字列を登録するには「-」にします
@@ -75,6 +79,7 @@ def load(conn, truncate: bool=True, **targets):
             1,hoge,2018-01-01 12:34:56 ← 日付はyyyy-MM-dd hh:mm:ss形式。時間部分は省略可能
             2,-,2018-01-02             ← nameに空文字列で登録される
             3,,                        ← name, created_atにNULLで登録される
+            4,"hoge,fuga",             ← nameに「hoge,fuga」で登録される
 
     外部キー制約について
         一時的に無効にし、最後に有効にしています
@@ -94,18 +99,33 @@ def load(conn, truncate: bool=True, **targets):
         _set_foreign_key_checks_disabled(conn)
 
         for table, filepath in targets.items():
-            if truncate:
-                _truncate(conn, table)
+            if not os.path.isfile(filepath):
+                raise FileNotFoundError(filepath)
 
-            with open(filepath, mode='r', encoding='utf_8') as f:
-                csv_reader = csv.reader(f, delimiter=',', quotechar='"')
-                header = next(csv_reader)
+            extention = os.path.splitext(filepath)[1]
+            if re.match('\\.csv', extention, re.IGNORECASE):
+                delimiter = ','
+            elif re.match('\\.tsv', extention, re.IGNORECASE):
+                delimiter = '\t'
+            else:
+                raise ValueError("Unsupported extension: {}".format(filepath))
 
-                for row in csv_reader:
-                    _insert(conn, table, header, row)
+            _load(conn, truncate=truncate, table=table, filepath=filepath, delimiter=delimiter)
 
     finally:
         _set_foreign_key_checks_enabled(conn)
+
+
+def _load(conn, truncate, table, filepath, delimiter=','):
+    if truncate:
+        _truncate(conn, table)
+
+    with open(filepath, mode='r', encoding='utf_8') as f:
+        csv_reader = csv.reader(f, delimiter=delimiter, quotechar='"')
+        header = next(csv_reader)
+
+        for row in csv_reader:
+            _insert(conn, table, header, row)
 
 
 def _set_foreign_key_checks_disabled(conn):
