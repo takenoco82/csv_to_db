@@ -28,4 +28,4 @@ services:
       MYSQL_HOST: mysql
     volumes:
       # 面倒なのでプロジェクトごと共有する
-      - ../using-pandas:/using-pandas
+      - ../csv_to_db:/csv_to_db
