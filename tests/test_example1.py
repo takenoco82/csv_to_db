@@ -3,7 +3,7 @@ from parameterized import parameterized, param
 from datetime import datetime
 from app import database_connection
 from app import example1
-from tests import csv_to_db
+from helper import csv_to_db
 from collections import namedtuple
 
 
