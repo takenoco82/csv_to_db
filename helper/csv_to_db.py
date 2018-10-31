@@ -98,7 +98,9 @@ def load(conn, truncate: bool=True, **targets):
     try:
         _set_foreign_key_checks_disabled(conn)
 
-        for table, filepath in targets.items():
+        tables = sorted(targets.keys())
+        for table in tables:
+            filepath = targets[table]
             if not os.path.isfile(filepath):
                 raise FileNotFoundError(filepath)
 
