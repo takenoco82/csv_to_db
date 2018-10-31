@@ -1,10 +1,16 @@
-import sys
 import csv
 import os
 import re
+import sys
 from functools import wraps
+from logging import DEBUG, basicConfig, getLogger
 
 from app import database_connection
+
+# ログ出力設定
+formatter = "%(asctime)s [%(levelname)s] %(message)s"
+basicConfig(level=DEBUG, format=formatter)
+logger = getLogger(__name__)
 
 
 class SQLException(Exception):
@@ -132,6 +138,7 @@ def _load(conn, truncate, table, filepath, delimiter=','):
         csv_reader = csv.reader(f, delimiter=delimiter, quotechar='"')
         header = next(csv_reader)
 
+        logger.info("LOAD DATA: {}".format(table))
         for row in csv_reader:
             _insert(conn, table, header, row)
 
@@ -162,7 +169,6 @@ def _truncate(conn, table):
 def _insert(conn, table, columns, values):
     # TODO: csvファイル内では同じものなので、作成するのは1回だけにしたい
     sql = _create_insert_sql(table, columns)
-    print("LOAD DATA: {}, {}".format(table, values))
     with conn.cursor() as cur:
         try:
             cur.execute(sql, [_convert_value(value) for value in values])
@@ -208,7 +214,7 @@ def main():
         init_db(conn, csv_dir="tests/data")
         conn.commit()
     except Exception as e:
-        print(e)
+        logger.error(e)
         conn.rollback()
         sys.exit(1)
     finally:
