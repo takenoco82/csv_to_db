@@ -1,9 +1,15 @@
+import sys
 import csv
 import os
 import re
 from functools import wraps
 
 from app import database_connection
+
+
+class SQLException(Exception):
+    def __init__(self, message):
+        self.message = message
 
 
 def init_db(conn, csv_dir):
@@ -145,7 +151,12 @@ def _set_foreign_key_checks_enabled(conn):
 def _truncate(conn, table):
     sql = "TRUNCATE TABLE {}".format(table)
     with conn.cursor() as cur:
-        cur.execute(sql)
+        try:
+            cur.execute(sql)
+        except Exception as e:
+            # pymysql.err.ProgrammingErrorには args[0]: エラーコード, args[1]: メッセージ が入っている
+            message = "{msg}".format(msg=e.args[1])
+            raise SQLException(message) from e
 
 
 def _insert(conn, table, columns, values):
@@ -153,7 +164,12 @@ def _insert(conn, table, columns, values):
     sql = _create_insert_sql(table, columns)
     print("LOAD DATA: {}, {}".format(table, values))
     with conn.cursor() as cur:
-        cur.execute(sql, [_convert_value(value) for value in values])
+        try:
+            cur.execute(sql, [_convert_value(value) for value in values])
+        except Exception as e:
+            # pymysql.err.ProgrammingErrorには args[0]: エラーコード, args[1]: メッセージ が入っている
+            message = "Incorrect value in `{table}`: {msg}".format(table=table, msg=e.args[1])
+            raise SQLException(message) from e
 
 
 def _create_insert_sql(table, columns):
@@ -188,9 +204,16 @@ def _convert_value(value):
 def main():
     conn = database_connection.get_connection()
     conn.begin()
-    init_db(conn, csv_dir="tests/data")
-    conn.commit()
-    conn.close()
+    try:
+        init_db(conn, csv_dir="tests/data")
+        conn.commit()
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        sys.exit(1)
+    finally:
+        conn.close()
+    sys.exit(0)
 
 
 if __name__ == '__main__':
